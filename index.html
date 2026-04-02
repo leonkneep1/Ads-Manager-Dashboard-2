@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TheSourcer.ai · Meta Ads Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Mono', monospace; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+/* Header */
+.header { background: #0d0d18; border-bottom: 1px solid #1e1e2e; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.header-left { display: flex; align-items: center; gap: 14px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #4444ff; box-shadow: 0 0 12px #4444ff; }
+.title { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+.subtitle { font-size: 11px; color: #444; margin-top: 1px; }
+.header-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* Controls */
+select, input[type=text], input[type=password] { background: #111118; border: 1px solid #2a2a3a; border-radius: 6px; padding: 8px 12px; color: #e0e0e0; font-family: inherit; font-size: 12px; outline: none; }
+select:focus, input:focus { border-color: #4444ff66; }
+.btn { border: 1px solid #2a2a3a; background: #111118; color: #e0e0e0; border-radius: 6px; padding: 8px 14px; cursor: pointer; font-family: inherit; font-size: 12px; transition: all .15s; white-space: nowrap; }
+.btn:hover { background: #1a1a2a; border-color: #4444ff66; }
+.btn.primary { background: #1a1aff22; border-color: #4444ff; color: #8888ff; }
+.btn.primary:hover { background: #1a1aff44; }
+.btn.on { background: #1a1a3a; border-color: #4444ff; color: #8888ff; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Main */
+.main { padding: 20px 24px; max-width: 1440px; margin: 0 auto; }
+
+/* Error */
+.error-box { background: #ff222215; border: 1px solid #ff222240; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: #ff8888; display: none; }
+
+/* Config box */
+.config-box { background: #0d0d1a; border: 1px solid #2a2a5a; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+.config-box h3 { font-family: 'Space Grotesk', sans-serif; font-size: 13px; color: #6666ff; margin-bottom: 12px; }
+.config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.config-field label { font-size: 10px; color: #555; display: block; margin-bottom: 4px; letter-spacing: .5px; text-transform: uppercase; }
+.config-field input { width: 100%; }
+
+/* KPI Grid */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.kpi { background: #111118; border: 1px solid #1e1e2e; border-radius: 8px; padding: 14px; transition: border-color .2s, transform .2s; }
+.kpi:hover { border-color: #3333ff55; transform: translateY(-1px); }
+.kpi-icon { font-size: 16px; margin-bottom: 5px; }
+.kpi-label { font-size: 10px; color: #555; margin-bottom: 3px; letter-spacing: .6px; text-transform: uppercase; }
+.kpi-value { font-size: 19px; font-weight: 500; color: #fff; letter-spacing: -.5px; }
+
+/* Filters */
+.filters { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+.filters-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+/* Table */
+.table-wrap { background: #111118; border: 1px solid #1e1e2e; border-radius: 8px; overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; }
+.table th { color: #555; font-size: 11px; padding: 10px 14px; text-align: left; border-bottom: 1px solid #2a2a3a; cursor: pointer; white-space: nowrap; font-weight: 400; }
+.table th:hover { color: #888; }
+.table td { padding: 11px 14px; border-bottom: 1px solid #1a1a28; font-size: 12px; white-space: nowrap; }
+.table tr:hover td { background: #11111e; }
+.bar-wrap { height: 2px; background: #1a1a2a; border-radius: 1px; margin-top: 3px; overflow: hidden; min-width: 80px; }
+.bar-fill { height: 100%; border-radius: 1px; transition: width .5s ease; }
+.badge { font-size: 10px; padding: 2px 8px; border-radius: 3px; letter-spacing: .5px; display: inline-flex; align-items: center; gap: 4px; }
+.badge-dot { width: 5px; height: 5px; border-radius: 50%; }
+.campaign-name { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #d0d0d0; }
+
+/* AI box */
+.ai-box { background: #0d0d1a; border: 1px solid #2a2a5a; border-radius: 8px; padding: 20px; margin-top: 16px; display: none; }
+.ai-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600; color: #6666ff; margin-bottom: 12px; }
+.ai-content { font-size: 13px; line-height: 1.75; color: #c0c0d0; white-space: pre-wrap; }
+
+/* Footer */
+.footer { margin-top: 24px; padding-top: 14px; border-top: 1px solid #1a1a28; display: flex; justify-content: space-between; font-size: 11px; color: #2a2a3a; flex-wrap: wrap; gap: 8px; }
+
+/* Spinner */
+.spin { display: inline-block; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.count-info { margin-top: 8px; font-size: 11px; color: #333; }
+
+@media (max-width: 768px) {
+  .config-grid { grid-template-columns: 1fr; }
+  .table th:nth-child(n+4), .table td:nth-child(n+4) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="dot"></div>
+    <div>
+      <div class="title">TheSourcer.ai · Meta Ads</div>
+      <div class="subtitle" id="last-refresh">Nog niet geladen</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <select id="time-range">
+      <option value="last_7d">Laatste 7 dagen</option>
+      <option value="last_14d">Laatste 14 dagen</option>
+      <option value="last_30d">Laatste 30 dagen</option>
+      <option value="this_month">Deze maand</option>
+      <option value="last_month">Vorige maand</option>
+    </select>
+    <button class="btn primary" onclick="loadData()" id="refresh-btn">↻ Refresh</button>
+    <button class="btn" onclick="getAiInsight()" id="ai-btn">⚡ AI Analyse</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Config -->
+  <div class="config-box" id="config-box">
+    <h3>⚙️ Configuratie — vul eenmalig in</h3>
+    <div class="config-grid">
+      <div class="config-field">
+        <label>Anthropic API Key</label>
+        <input type="password" id="anthropic-key" placeholder="sk-ant-..." />
+      </div>
+      <div class="config-field">
+        <label>Meta Access Token</label>
+        <input type="password" id="meta-token" placeholder="EAAxxxxxxx..." />
+      </div>
+      <div class="config-field">
+        <label>Meta Ad Account ID</label>
+        <input type="text" id="meta-account" placeholder="act_2019446891729596" value="act_2019446891729596" />
+      </div>
+      <div class="config-field">
+        <label>&nbsp;</label>
+        <button class="btn primary" onclick="saveConfig()" style="width:100%">💾 Opslaan & Laden</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box" id="error-box"></div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi"><div class="kpi-icon">💸</div><div class="kpi-label">Totale Spend</div><div class="kpi-value" id="kpi-spend">—</div></div>
+    <div class="kpi"><div class="kpi-icon">👁️</div><div class="kpi-label">Impressies</div><div class="kpi-value" id="kpi-impressions">—</div></div>
+    <div class="kpi"><div class="kpi-icon">🖱️</div><div class="kpi-label">Clicks</div><div class="kpi-value" id="kpi-clicks">—</div></div>
+    <div class="kpi"><div class="kpi-icon">🎯</div><div class="kpi-label">Leads</div><div class="kpi-value" id="kpi-conversions">—</div></div>
+    <div class="kpi"><div class="kpi-icon">📈</div><div class="kpi-label">Gem. CTR</div><div class="kpi-value" id="kpi-ctr">—</div></div>
+    <div class="kpi"><div class="kpi-icon">💰</div><div class="kpi-label">Gem. CPC</div><div class="kpi-value" id="kpi-cpc">—</div></div>
+    <div class="kpi"><div class="kpi-icon">🏆</div><div class="kpi-label">Kosten/Lead</div><div class="kpi-value" id="kpi-cpl">—</div></div>
+    <div class="kpi"><div class="kpi-icon">🔄</div><div class="kpi-label">Actief / Gepauzeerd</div><div class="kpi-value" id="kpi-status">—</div></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <input type="text" id="search" placeholder="Zoek campagne..." oninput="renderTable()" style="width:200px">
+    <button class="btn on" id="filter-all" onclick="setFilter('ALL')">Alle</button>
+    <button class="btn" id="filter-active" onclick="setFilter('ACTIVE')">✓ Actief</button>
+    <button class="btn" id="filter-paused" onclick="setFilter('PAUSED')">⏸ Gepauzeerd</button>
+    <div class="filters-right">
+      <span style="font-size:11px;color:#444">Sorteer:</span>
+      <select id="sort-by" onchange="renderTable()">
+        <option value="spend">SPEND</option>
+        <option value="impressions">IMPRESSIONS</option>
+        <option value="clicks">CLICKS</option>
+        <option value="conversions">LEADS</option>
+        <option value="ctr">CTR</option>
+        <option value="cpc">CPC</option>
+      </select>
+      <button class="btn" id="sort-dir-btn" onclick="toggleSortDir()">↓</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th onclick="setSortBy('campaign_name')">Campagne</th>
+          <th onclick="setSortBy('spend')">Spend</th>
+          <th onclick="setSortBy('impressions')">Impr.</th>
+          <th onclick="setSortBy('clicks')">Clicks</th>
+          <th onclick="setSortBy('ctr')">CTR</th>
+          <th onclick="setSortBy('cpc')">CPC</th>
+          <th onclick="setSortBy('conversions')">Leads</th>
+          <th>CPL</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr><td colspan="9" style="text-align:center;padding:40px;color:#333">Vul je API keys in en klik op "Opslaan & Laden"</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="count-info" id="count-info"></div>
+
+  <!-- AI Box -->
+  <div class="ai-box" id="ai-box">
+    <div class="ai-title">⚡ AI Campagne Analyse</div>
+    <div class="ai-content" id="ai-content"></div>
+  </div>
+
+  <div class="footer">
+    <span>TheSourcer.ai · Meta Ads Dashboard</span>
+    <span id="footer-range">Meta Marketing API</span>
+  </div>
+</div>
+
+<script>
+let campaigns = [];
+let filter = 'ALL';
+let sortBy = 'spend';
+let sortDir = 'desc';
+
+const eur = v => '€' + Number(v).toFixed(2);
+const pct = v => Number(v).toFixed(2) + '%';
+const num = v => Number(v).toLocaleString('nl-NL');
+
+function saveConfig() {
+  const ak = document.getElementById('anthropic-key').value.trim();
+  const mt = document.getElementById('meta-token').value.trim();
+  const ma = document.getElementById('meta-account').value.trim();
+  if (!ak || !mt || !ma) { showError('Vul alle velden in.'); return; }
+  localStorage.setItem('ts_ak', ak);
+  localStorage.setItem('ts_mt', mt);
+  localStorage.setItem('ts_ma', ma);
+  loadData();
+}
+
+function loadConfig() {
+  const ak = localStorage.getItem('ts_ak');
+  const mt = localStorage.getItem('ts_mt');
+  const ma = localStorage.getItem('ts_ma');
+  if (ak) document.getElementById('anthropic-key').value = ak;
+  if (mt) document.getElementById('meta-token').value = mt;
+  if (ma) document.getElementById('meta-account').value = ma;
+  if (ak && mt && ma) document.getElementById('config-box').style.display = 'none';
+  return { ak, mt, ma };
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-box');
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('error-box').style.display = 'none';
+}
+
+async function loadData() {
+  const { ak, mt, ma } = loadConfig();
+  if (!ak || !mt || !ma) { document.getElementById('config-box').style.display = 'block'; return; }
+  hideError();
+  const btn = document.getElementById('refresh-btn');
+  btn.innerHTML = '<span class="spin">↻</span> Laden...';
+  btn.disabled = true;
+  const tr = document.getElementById('time-range').value;
+  try {
+    const fields = 'campaign_id,campaign_name,impressions,clicks,spend,ctr,cpc,cpm,reach,actions';
+    const params = new URLSearchParams({ access_token: mt, level: 'campaign', fields, date_preset: tr, limit: 50 });
+    const res = await fetch(`https://graph.facebook.com/v19.0/${ma}/insights?${params}`);
+    const json = await res.json();
+    if (json.error) throw new Error(json.error.message);
+
+    // Get statuses
+    const sp2 = new URLSearchParams({ access_token: mt, fields: 'id,effective_status', limit: 100 });
+    const sr = await fetch(`https://graph.facebook.com/v19.0/${ma}/campaigns?${sp2}`);
+    const sj = await sr.json();
+    const statusMap = {};
+    (sj.data || []).forEach(c => statusMap[c.id] = c.effective_status);
+
+    campaigns = (json.data || []).map(c => {
+      const actions = c.actions || [];
+      const leads = parseInt(actions.find(a => a.action_type === 'lead')?.value || 0);
+      return {
+        campaign_id: c.campaign_id,
+        campaign_name: c.campaign_name,
+        impressions: parseInt(c.impressions || 0),
+        clicks: parseInt(c.clicks || 0),
+        spend: parseFloat(c.spend || 0),
+        ctr: parseFloat(c.ctr || 0),
+        cpc: parseFloat(c.cpc || 0),
+        cpm: parseFloat(c.cpm || 0),
+        reach: parseInt(c.reach || 0),
+        conversions: leads,
+        effective_status: statusMap[c.campaign_id] || 'UNKNOWN'
+      };
+    });
+
+    document.getElementById('config-box').style.display = 'none';
+    document.getElementById('last-refresh').textContent = 'Geüpdated: ' + new Date().toLocaleTimeString('nl-NL') + ' · ' + campaigns.length + ' campagnes';
+    document.getElementById('footer-range').textContent = 'Meta Marketing API · ' + tr;
+    updateKPIs();
+    renderTable();
+  } catch(e) {
+    showError(e.message);
+  }
+  btn.innerHTML = '↻ Refresh';
+  btn.disabled = false;
+}
+
+function updateKPIs() {
+  const d = campaigns;
+  if (!d.length) return;
+  const spend = d.reduce((s,c) => s+c.spend, 0);
+  const imp = d.reduce((s,c) => s+c.impressions, 0);
+  const clicks = d.reduce((s,c) => s+c.clicks, 0);
+  const conv = d.reduce((s,c) => s+c.conversions, 0);
+  const ctr = d.reduce((s,c) => s+c.ctr, 0) / d.length;
+  const cpc = d.reduce((s,c) => s+c.cpc, 0) / d.length;
+  const cpl = conv > 0 ? spend/conv : 0;
+  const active = d.filter(c => c.effective_status === 'ACTIVE').length;
+  const paused = d.filter(c => c.effective_status === 'PAUSED').length;
+  document.getElementById('kpi-spend').textContent = eur(spend);
+  document.getElementById('kpi-impressions').textContent = num(imp);
+  document.getElementById('kpi-clicks').textContent = num(clicks);
+  document.getElementById('kpi-conversions').textContent = num(conv);
+  document.getElementById('kpi-ctr').textContent = pct(ctr);
+  document.getElementById('kpi-cpc').textContent = eur(cpc);
+  document.getElementById('kpi-cpl').textContent = cpl > 0 ? eur(cpl) : '—';
+  document.getElementById('kpi-status').innerHTML = `<span style="color:#00ff88">${active}</span> <span style="color:#333">/</span> <span style="color:#ff8800">${paused}</span>`;
+}
+
+function setFilter(f) {
+  filter = f;
+  ['all','active','paused'].forEach(x => document.getElementById('filter-'+x).classList.remove('on'));
+  document.getElementById('filter-'+f.toLowerCase()).classList.add('on');
+  renderTable();
+}
+
+function setSortBy(col) {
+  if (sortBy === col) toggleSortDir();
+  else { sortBy = col; document.getElementById('sort-by').value = col; renderTable(); }
+}
+
+function toggleSortDir() {
+  sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+  document.getElementById('sort-dir-btn').textContent = sortDir === 'desc' ? '↓' : '↑';
+  renderTable();
+}
+
+function renderTable() {
+  const search = document.getElementById('search').value.toLowerCase();
+  sortBy = document.getElementById('sort-by').value;
+  const maxSpend = Math.max(...campaigns.map(c => c.spend), 1);
+
+  let rows = campaigns.filter(c => {
+    if (filter !== 'ALL' && c.effective_status !== filter) return false;
+    if (search && !c.campaign_name.toLowerCase().includes(search)) return false;
+    return true;
+  }).sort((a,b) => {
+    const av = a[sortBy] ?? 0, bv = b[sortBy] ?? 0;
+    return sortDir === 'desc' ? bv-av : av-bv;
+  });
+
+  document.getElementById('count-info').textContent = rows.length + ' van ' + campaigns.length + ' campagnes';
+
+  const sc = {
+    ACTIVE: { bg:'#00ff8820', color:'#00ff88', dot:'#00ff88', label:'Actief' },
+    PAUSED: { bg:'#ff880020', color:'#ff8800', dot:'#ff8800', label:'Gepauzeerd' },
+    UNKNOWN: { bg:'#44444420', color:'#888', dot:'#666', label:'Onbekend' }
+  };
+
+  const tbody = document.getElementById('table-body');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#333">Geen campagnes gevonden</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(c => {
+    const cpl = c.conversions > 0 ? c.spend/c.conversions : null;
+    const s = sc[c.effective_status] || sc.UNKNOWN;
+    const spendPct = (c.spend/maxSpend*100).toFixed(1);
+    const ctrColor = c.ctr > 3 ? '#00ff88' : c.ctr > 2 ? '#aaff44' : '#888';
+    const cplColor = cpl === null ? '#444' : cpl < 3 ? '#00ff88' : cpl < 6 ? '#aaff44' : '#ff6644';
+    const leadsColor = c.conversions > 50 ? '#00ff88' : c.conversions > 20 ? '#aaff44' : '#999';
+    const barColor = c.effective_status === 'ACTIVE' ? '#4444ff' : '#2a2a3a';
+    return `<tr>
+      <td><div class="campaign-name" title="${c.campaign_name}">${c.campaign_name}</div><div class="bar-wrap"><div class="bar-fill" style="width:${spendPct}%;background:${barColor}"></div></div></td>
+      <td style="color:#fff;font-weight:500">${eur(c.spend)}</td>
+      <td style="color:#999">${num(c.impressions)}</td>
+      <td style="color:#999">${num(c.clicks)}</td>
+      <td style="color:${ctrColor}">${pct(c.ctr)}</td>
+      <td style="color:#999">${eur(c.cpc)}</td>
+      <td style="color:${leadsColor};font-weight:${c.conversions>50?600:400}">${num(c.conversions)}</td>
+      <td style="color:${cplColor}">${cpl !== null ? eur(cpl) : '—'}</td>
+      <td><span class="badge" style="background:${s.bg};color:${s.color}"><span class="badge-dot" style="background:${s.dot}"></span>${s.label}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+async function getAiInsight() {
+  const { ak } = loadConfig();
+  if (!ak) { showError('Voer eerst je Anthropic API key in.'); return; }
+  if (!campaigns.length) { showError('Laad eerst campagne data.'); return; }
+  const btn = document.getElementById('ai-btn');
+  btn.innerHTML = '<span class="spin">⚡</span> Analyseren...';
+  btn.disabled = true;
+  const aiBox = document.getElementById('ai-box');
+  const aiContent = document.getElementById('ai-content');
+  aiBox.style.display = 'block';
+  aiContent.textContent = 'Analyseren...';
+
+  const spend = campaigns.reduce((s,c) => s+c.spend, 0);
+  const conv = campaigns.reduce((s,c) => s+c.conversions, 0);
+  const active = campaigns.filter(c => c.effective_status === 'ACTIVE').length;
+  const list = campaigns.map(c => {
+    const cpl = c.conversions > 0 ? (c.spend/c.conversions).toFixed(2) : '∞';
+    return `- ${c.campaign_name}: €${c.spend.toFixed(2)} spend, ${c.conversions} leads, CPL €${cpl}, CTR ${c.ctr.toFixed(2)}%, ${c.effective_status}`;
+  }).join('\n');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ak, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 800,
+        system: 'Je bent een directe Meta Ads strateeg voor blue-collar recruitment (lassers, automonteurs, pijpfitters, CNC-operators). Geef 3-4 concrete actiepunten. Noem campagnes bij naam. Gebruik € notatie.',
+        messages: [{ role: 'user', content: `Analyseer:\nSpend: €${spend.toFixed(2)}, Leads: ${conv}, Actief: ${active}/${campaigns.length}\n\n${list}\n\nGeef 3-4 directe actiepunten.` }]
+      })
+    });
+    const data = await res.json();
+    aiContent.textContent = data.content?.find(b => b.type === 'text')?.text || 'Geen resultaat.';
+  } catch(e) {
+    aiContent.textContent = 'Fout: ' + e.message;
+  }
+  btn.innerHTML = '⚡ AI Analyse';
+  btn.disabled = false;
+}
+
+// Init
+window.onload = () => {
+  const { ak, mt, ma } = loadConfig();
+  if (ak && mt && ma) loadData();
+};
+</script>
+</body>
+</html>
