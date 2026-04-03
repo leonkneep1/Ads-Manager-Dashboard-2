@@ -110,13 +110,14 @@ select:focus, input:focus { border-color: #4444ff66; }
     </select>
     <button class="btn primary" onclick="loadData()" id="refresh-btn">↻ Refresh</button>
     <button class="btn" onclick="getAiInsight()" id="ai-btn">⚡ AI Analyse</button>
+    <button class="btn" onclick="toggleConfig()">⚙️ Instellingen</button>
   </div>
 </div>
 
 <div class="main">
 
   <!-- Config -->
-  <div class="config-box" id="config-box">
+  <div class="config-box" id="config-box" style="display:none">
     <h3>⚙️ Configuratie — vul eenmalig in</h3>
     <div class="config-grid">
       <div class="config-field">
@@ -246,7 +247,7 @@ function loadConfig() {
   if (as) document.getElementById('app-secret').value = as;
   if (mt) document.getElementById('meta-token').value = mt;
   if (ma) document.getElementById('meta-account').value = ma;
-  if (ak && mt && ma) document.getElementById('config-box').style.display = 'none';
+  // config box stays hidden, use ⚙️ button to open
   return { ak, mt, ma };
 }
 
@@ -440,6 +441,12 @@ async function getAiInsight() {
   }
   btn.innerHTML = '⚡ AI Analyse';
   btn.disabled = false;
+}
+
+// Toggle config panel
+function toggleConfig() {
+  const box = document.getElementById('config-box');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
 
 // Extend token to 60 days
